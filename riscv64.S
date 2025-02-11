@@ -11,38 +11,44 @@ _start:
     la a1, __dtb_start
     la a2, __initrd_start
     la a3, __image_start
-    
+
     /* Copy dtb to target address */
-    la t0, DTB_LOAD_ADDR
+    li t0, DTB_LOAD_ADDR
     la t1, __dtb_end
-1:  lb t2, 0(a1)
-    sb t2, 0(t0)
-    addi a1, a1, 1
-    addi t0, t0, 1
-    bne a1, t1, 1b
+    bge a1, t1, 1f
+0:  ld t2, 0(a1)
+    sd t2, 0(t0)
+    addi a1, a1, 8
+    addi t0, t0, 8
+    bltu a1, t1, 0b
+1:
 
     /* Copy initrd to target address */
-    la t0, INITRD_LOAD_ADDR
+    li t0, INITRD_LOAD_ADDR
     la t1, __initrd_end
-1:  lb t2, 0(a2)
-    sb t2, 0(t0)
-    addi a2, a2, 1
-    addi t0, t0, 1
-    bne a2, t1, 1b
+    bge a2, t1, 1f
+0:  ld t2, 0(a2)
+    sd t2, 0(t0)
+    addi a2, a2, 8
+    addi t0, t0, 8
+    bltu a2, t1, 0b
+1:
 
     /* Copy Image to target address */
-    la t0, KERNEL_LOAD_ADDR
-    la t1, __linux_end
-1:  lb t2, 0(a3)
-    sb t2, 0(t0)
-    addi a3, a3, 1
-    addi t0, t0, 1
-    bne a3, t1, 1b
+    li t0, KERNEL_LOAD_ADDR
+    la t1, __image_end
+    bge a3, t1, 1f
+0:  ld t2, 0(a3)
+    sd t2, 0(t0)
+    addi a3, a3, 8
+    addi t0, t0, 8
+    bltu a3, t1, 0b
+1:
 
-    /* 要求 a0 必须指向 dtb 的地址 */
-    la a0, DTB_LOAD_ADDR
-    li a1,0
-    la t0, KERNEL_LOAD_ADDR
+    /* 要求 a1 必须指向 dtb 的地址 */
+    li a1, DTB_LOAD_ADDR
+    li a0,0
+    li t0, KERNEL_LOAD_ADDR
     jalr t0
     j .
 
